@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>InfoDose EYE · OS v5.0 Fusion</title>
+
+  <!-- PWA / Mobile Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#020408">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;900&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg: #020408;
+      --header-h: 60px;
+      --primary: #00f5ff;
+      --accent: #7000ff;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: rgba(255, 255, 255, 0.08);
+      --font-main: 'Inter', sans-serif;
+      --font-code: 'JetBrains Mono', monospace;
+      --glass: blur(25px) saturate(180%);
+      --panel-bg: rgba(5, 7, 12, 0.98);
+      --safe-top: env(safe-area-inset-top, 0px);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none}
+    *::-webkit-scrollbar{display:none}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-main);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+    /* HEADER */
+    #eye-header{position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(2,4,8,0.85);backdrop-filter:var(--glass);border-bottom:1px solid var(--border);transition:all .6s cubic-bezier(.16,1,.3,1);height:calc(var(--header-h)+var(--safe-top));overflow:hidden}
+    #eye-header.sanfona{height:45vh}
+    #eye-header.expanded{height:100vh;background:var(--panel-bg)}
+    
+    /* default mini: right (Mobile First) */
+    #eye-header.mini{height:48px;width:48px;right:15px;left:auto;top:calc(15px + var(--safe-top));border-radius:50%;border:1px solid var(--primary);box-shadow:0 0 20px rgba(0,245,255,0.4);background:var(--bg)}
+    
+    .status-bar{height:calc(var(--header-h)+var(--safe-top));padding:var(--safe-top) 20px 0;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+    .orb-wrapper{display:flex;align-items:center;gap:10px}
+    .sys-identity{display:flex;align-items:center;gap:10px;font-size:.7rem;font-weight:900;letter-spacing:1.5px}
+    .sys-identity span{color:var(--primary);text-shadow:0 0 8px var(--primary)}
+    #orb-canvas-container{width:36px;height:36px;position:relative;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none}
+    
+    .os-container{height:calc(100vh - var(--header-h));display:flex;flex-direction:column;padding:20px;gap:20px;opacity:0;transition:.3s;overflow-y:auto}
+    #eye-header.expanded .os-container,#eye-header.sanfona .os-container{opacity:1}
+    
+    .os-section{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:15px}
+    .sec-title{font-size:.6rem;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:2px;display:flex;justify-content:space-between}
+    
+    .app-dock{display:grid;grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:15px}
+    .app-card{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+    .app-thumb{width:60px;height:60px;border-radius:18px;background:#000;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;position:relative;transition:0.2s}
+    .app-card.active .app-thumb{border-color:var(--primary);box-shadow:0 0 15px rgba(0,245,255,.3)}
+    .app-label{font-size:.6rem;color:var(--muted);font-weight:700;text-align:center}
+    
+    .input-min{background:transparent;border:none;border-bottom:1px solid var(--border);color:#fff;padding:10px 0;font-size:0.9rem;width:100%}
+    
+    /* EDITOR UPGRADE CSS */
+    .editor-wrapper { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #000; }
+    .editor-toolbar { display: flex; background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--border); }
+    .tool-btn { 
+        flex: 1; background: transparent; border: none; color: var(--muted); padding: 10px; 
+        cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+    }
+    .tool-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    
+    #monaco-lite{width:100%;height:250px;background:transparent;border:none;color:var(--primary);font-family:var(--font-code);padding:15px;font-size:0.8rem;resize:none}
+    
+    .btn-row{display:flex;gap:10px}
+    .btn{flex:1;padding:14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:#fff;font-weight:800;font-size:.75rem;text-transform:uppercase;cursor:pointer;transition:.2s}
+    .btn-main{background:var(--primary);color:#000;border:none}
+    
+    /* KERNEL INSPECTOR CSS */
+    .data-row { display: flex; justify-content: space-between; font-family: var(--font-code); font-size: 0.75rem; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .data-key { color: var(--muted); }
+    .data-val { color: var(--accent); }
+
+    #stage{position:fixed;inset:0;background:var(--bg);z-index:1;padding-top:calc(var(--header-h)+var(--safe-top))}
+    iframe{width:100%;height:100%;border:none;background:#fff;opacity:0;transition:opacity 0.5s}
+    iframe.visible{opacity:1}
+    #empty-state{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.2;text-align:center}
+    
+    #eye-header.mini .os-container,#eye-header.mini .status-bar>:not(.orb-wrapper){display:none}
+    #eye-header.mini .status-bar{padding:0;justify-content:center;height:100%}
+    
+    /* UNO loader */
+    :root{--g1:#F0F;--g2:#0FF}
+    .di-loader{--di-size:36px;position:relative;width:var(--di-size);height:var(--di-size)}
+    .di-ring{position:absolute;inset:0;background:conic-gradient(from 90deg,var(--g1),var(--g2));border-radius:50%;-webkit-mask:radial-gradient(farthest-side,transparent calc(50% - 1px),#000 calc(50% - 1px),#000 100%);mask:radial-gradient(farthest-side,transparent calc(50% - 1px),#000 calc(50% - 1px),#000 100%);animation:spin 6s linear infinite}
+    .di-stroke{position:absolute;left:50%;top:50%;width:64%;height:2px;background:linear-gradient(90deg,var(--g1),var(--g2));transform:translate(-50%,-50%);border-radius:999px;animation:breath 2.4s ease-in-out infinite}
+    .di-dots{position:absolute;inset:0;transform:rotate(-90deg);animation:orbit 4.2s linear infinite}
+    .di-dots i{--i:0;position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;background:conic-gradient(var(--g1),var(--g2));-webkit-mask:radial-gradient(circle,#000 62%,transparent 63%);mask:radial-gradient(circle,#000 62%,transparent 63%);opacity:.85;transform:rotate(calc(var(--i) * 51deg)) translate(calc(7px + var(--i) * 2.2px)) rotate(calc(var(--i) * -51deg));animation:pulse 4.2s linear infinite;animation-delay:calc(var(--i) * 0.6s)}
+    @keyframes orbit{to{transform:rotate(270deg)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes breath{0%,100%{opacity:.9}50%{opacity:1}}@keyframes pulse{0%,70%{opacity:.55;transform:scale(.92)}76%,84%{opacity:1;transform:scale(1.12)}100%{opacity:.7;transform:scale(.96)}}
+    
+    /* Drag */
+    #eye-header.dragging{transition:none!important}
+    #eye-header{transition:left .18s ease,right .18s ease,top .18s ease,height .45s ease}
+    
+    /* injector modal */
+    #injectorModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:10010}
+    .small-btn{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);font-weight:700;color:var(--muted);cursor:pointer}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+
+  <header id="eye-header">
+    <div class="status-bar" onclick="OS.handleHeaderClick(event)">
+      <div class="orb-wrapper">
+        <div id="orb-canvas-container">
+          <span class="di-loader" aria-hidden="true">
+            <span class="di-ring"></span>
+            <span class="di-stroke"></span>
+            <span class="di-dots">
+              <i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i>
+            </span>
+          </span>
+        </div>
+        <div class="sys-identity">EYE <span>OS v5.0</span></div>
+      </div>
+
+      <div class="sys-identity" style="gap:15px">
+        <div id="active-app-name" style="color:var(--muted);font-size:.6rem">IDLE</div>
+        <div id="clock" style="font-family:var(--font-code)">00:00</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="small-btn" onclick="OS.toggleMini(event)">ORB</button>
+          <button class="small-btn" onclick="Injector.openUI()">STACKS</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="os-container">
+      <div class="os-section">
+        <div class="sec-title">
+            <span>Installed Modules</span>
+            <span id="mod-count" style="color:var(--primary)">0</span>
+        </div>
+        <div class="app-dock" id="app-grid"></div>
+      </div>
+
+      <!-- UPGRADED EDITOR SECTION -->
+      <div class="os-section">
+        <div class="sec-title">Fusion Code Editor</div>
+        <input id="in-name" class="input-min" placeholder="Module Name...">
+        
+        <div class="editor-wrapper">
+            <div class="editor-toolbar">
+                <button class="tool-btn" onclick="Editor.undo()" title="Undo"><i class="fa fa-rotate-left"></i></button>
+                <button class="tool-btn" onclick="Editor.redo()" title="Redo"><i class="fa fa-rotate-right"></i></button>
+                <button class="tool-btn" onclick="Editor.find()" title="Search"><i class="fa fa-magnifying-glass"></i></button>
+                <button class="tool-btn" onclick="Editor.template()" title="Template"><i class="fa fa-code"></i></button>
+            </div>
+            <textarea id="monaco-lite" spellcheck="false" placeholder="// Inject Code Here..."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-main" onclick="Core.installEditor()">Install</button>
+          <button class="btn" onclick="Core.patch()">Hot Patch</button>
+        </div>
+      </div>
+
+      <!-- UPGRADED KERNEL SECTION -->
+      <div class="os-section">
+        <div class="sec-title">Kernel Inspector</div>
+        <div id="kernel-view">
+            <div class="data-row"><span class="data-key">Status:</span> <span class="data-val">Scanning...</span></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="Kernel.scan()">Refresh State</button>
+          <button class="btn" onclick="IO.downloadDB()">Backup</button>
+          <button class="btn" style="color:#ff5555" onclick="Core.nuke()">Nuke OS</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="stage">
+    <div id="empty-state">
+      <h1 style="font-size:3rem;margin:0">EYE</h1>
+      <p>Fusion v5.0 Ready</p>
+    </div>
+    <iframe id="main-view" class="hidden"></iframe>
+  </main>
+
+  <!-- Injector Modal (Preserved) -->
+  <div id="injectorModal">
+    <div style="width:92%;max-width:900px;background:#061018;border-radius:12px;padding:16px;border:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:800; color:#fff">FUSION STACKS</div>
+        <div style="display:flex;gap:8px">
+          <button class="small-btn" onclick="Injector.saveStackPrompt()">Save Stack</button>
+          <button class="small-btn" onclick="Injector.closeUI()">Close</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:12px">
+        <textarea id="injectHtml" placeholder="Paste HTML or URL" style="flex:1;height:220px;background:#041018;border:1px solid var(--border);color:var(--muted);padding:10px;border-radius:8px;font-family:var(--font-code)"></textarea>
+        <div style="width:260px;display:flex;flex-direction:column;gap:8px">
+          <button class="small-btn" onclick="Injector.addFromTextarea()">Add to Stack</button>
+          <button class="small-btn" onclick="Injector.addFromURL()">Fetch+Add (URL)</button>
+          <div style="flex:1;overflow:auto;border:1px solid var(--border);padding:8px;border-radius:8px" id="stackList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* --------------------
+     Helpers: hash, sanitize, thumbnail (User's Advanced Generator)
+     -------------------- */
+  function hashCode(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h += (h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); } return Math.abs(h); }
+  function escapeHTML(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function sanitizeText(html,max=120){ if(!html) return ''; const t = html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<\/?[^>]+(>|$)/g,' ').replace(/\s+/g,' ').trim(); return t.slice(0,max); }
+  
+  function generateThumbnailFromContent(content,name){
+    const snippet = sanitizeText(content,120);
+    const h = hashCode((name||'') + snippet);
+    const hue = h % 360;
+    const bg = `hsl(${hue},20%,8%)`;
+    const c1 = `hsl(${hue},80%,65%)`;
+    const c2 = `hsl(${(hue+60)%360},70%,55%)`;
+    const label = (name||'APP').toUpperCase().slice(0,8);
+    const txt = snippet.length ? snippet : '<empty>';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><rect width="100%" height="100%" rx="24" fill="${bg}"/><rect x="8" y="8" width="184" height="96" rx="12" fill="url(#g)" opacity="0.14"/><text x="18" y="40" font-family="sans-serif" font-weight="800" font-size="40" fill="white">${label[0]||'A'}</text><text x="18" y="78" font-family="monospace" font-weight="600" font-size="10" fill="rgba(255,255,255,0.85)">${label}</text><foreignObject x="12" y="106" width="176" height="80"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:monospace;font-size:11px;color:#dbeafe;line-height:1.2;padding:6px">${escapeHTML(txt)}</div></foreignObject></svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+  
+  function compositeThumbFromThumbs(thumbs,name){
+    const tiles = thumbs.slice(0,4);
+    const bg = '#061018'; const w=200,h=200,tileW=96;
+    const positions=[{x:4,y:4},{x:100,y:4},{x:4,y:100},{x:100,y:100}];
+    let imgs='';
+    tiles.forEach((t,i)=> imgs+=`<image href="${t}" x="${positions[i].x}" y="${positions[i].y}" width="${tileW}" height="${tileW}" preserveAspectRatio="xMidYMid slice"/>`);
+    const label=(name||'STACK').toUpperCase().slice(0,8);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="100%" height="100%" rx="28" fill="${bg}"/>${imgs}<rect x="0" y="${h-34}" width="${w}" height="34" fill="rgba(0,0,0,0.35)"/><text x="12" y="${h-12}" font-family="sans-serif" font-size="14" font-weight="800" fill="#fff">${escapeHTML(label)}</text></svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  /* --------------------
+     EDITOR OBJECT (New Logic)
+     -------------------- */
+  const Editor = {
+    el: null, history: [], ptr: -1,
+    init(){
+        this.el = document.getElementById('monaco-lite');
+        this.pushState();
+        let tm;
+        this.el.addEventListener('input', ()=>{ clearTimeout(tm); tm=setTimeout(()=>this.pushState(), 600); });
+        // Tab support
+        this.el.addEventListener('keydown', e => { if(e.key === 'Tab') { e.preventDefault(); this.el.setRangeText('  ', this.el.selectionStart, this.el.selectionEnd, 'end'); }});
+    },
+    pushState(){ const val = this.el.value; if(this.history[this.ptr]===val) return; this.ptr++; this.history=this.history.slice(0,this.ptr); this.history.push(val); },
+    undo(){ if(this.ptr>0){ this.ptr--; this.el.value=this.history[this.ptr]; } },
+    redo(){ if(this.ptr<this.history.length-1){ this.ptr++; this.el.value=this.history[this.ptr]; } },
+    find(){ const t=prompt("Find:"); if(t){ const i=this.el.value.indexOf(t); if(i!==-1){ this.el.focus(); this.el.setSelectionRange(i,i+t.length); } else alert('Not found'); } },
+    template(){ this.el.value = `<html>\n<style>\n body{background:#111;color:#0f0;text-align:center;padding:50px;font-family:sans-serif}\n</style>\n<body>\n <h1>Fusion Module</h1>\n</body>\n</html>`; this.pushState(); }
+  };
+
+  /* --------------------
+     Core: IndexedDB (modules + stacks)
+     -------------------- */
+  const Core = { db:null, apps:[], stacks:[], activeId:null,
+    async init(){
+      return new Promise((res,reject)=>{
+        const req = indexedDB.open('EYE_OS_v50', 1);
+        req.onupgradeneeded = (e)=> {
+          const db=e.target.result;
+          if(!db.objectStoreNames.contains('modules')) db.createObjectStore('modules',{keyPath:'id',autoIncrement:true});
+          if(!db.objectStoreNames.contains('stacks')) db.createObjectStore('stacks',{keyPath:'id',autoIncrement:true});
+        };
+        req.onsuccess = (e)=> { this.db=e.target.result; this.refresh(); this.loadStacksFromDB(); res(); };
+        req.onerror = (e)=> { console.error('IDB ERR',e); reject(e); };
+      });
+    },
+    async refresh(){
+      if(!this.db) return;
+      return new Promise(res=>{
+        const tx=this.db.transaction('modules','readonly');
+        tx.objectStore('modules').getAll().onsuccess = e=>{
+          this.apps = e.target.result || [];
+          OS.renderApps(this.apps);
+          Kernel.scan(); // Update inspector
+          res(this.apps);
+        };
+      });
+    },
+    async installEditor(){
+      const name = document.getElementById('in-name').value || 'APP_'+Date.now().toString().slice(-4);
+      const content = document.getElementById('monaco-lite').value;
+      if(!content) return alert('Cole algum código');
+      const thumb = generateThumbnailFromContent(content,name);
+      const tx = this.db.transaction('modules','readwrite');
+      tx.objectStore('modules').add({ name, content, thumb, created:Date.now() });
+      tx.oncomplete = async ()=>{ await this.refresh(); OS.notify('INSTALLED'); };
+    },
+    async patch(){
+      if(!this.activeId) return alert('No active app');
+      const app = this.apps.find(a=>a.id===this.activeId);
+      app.content = document.getElementById('monaco-lite').value;
+      app.name = document.getElementById('in-name').value || app.name;
+      app.thumb = generateThumbnailFromContent(app.content, app.name);
+      const tx = this.db.transaction('modules','readwrite');
+      tx.objectStore('modules').put(app);
+      tx.oncomplete = async ()=>{ await this.refresh(); this.launch(this.activeId); OS.notify('PATCHED'); };
+    },
+    async launch(id){
+      const app = this.apps.find(a=>a.id===id); if(!app) return;
+      this.activeId = id;
+      document.getElementById('active-app-name').textContent = app.name.toUpperCase();
+      document.getElementById('in-name').value = app.name;
+      document.getElementById('monaco-lite').value = app.content;
+      Editor.pushState(); // Save state for editor
+      const view = document.getElementById('main-view'), empty=document.getElementById('empty-state');
+      const blob = new Blob([app.content],{type:'text/html'});
+      view.src = URL.createObjectURL(blob); view.classList.add('visible'); view.classList.remove('hidden'); empty.classList.add('hidden');
+      OS.setState(0);
+    },
+    delete(id,e){ e.stopPropagation(); if(!confirm('Delete Module?')) return; const tx=this.db.transaction('modules','readwrite'); tx.objectStore('modules').delete(id); tx.oncomplete = ()=> this.refresh(); },
+    nuke(){ if(confirm('Wipe System?')){ indexedDB.deleteDatabase('EYE_OS_v50'); location.reload(); } }
+  };
+
+  /* --------------------
+     Injector (stack in memory)
+     -------------------- */
+  const Injector = { stack: [],
+    openUI(){ document.getElementById('injectorModal').style.display='flex'; Core.loadStacksFromDB(); this.renderStack(); },
+    closeUI(){ document.getElementById('injectorModal').style.display='none'; },
+    addFromTextarea(){ const v=document.getElementById('injectHtml').value.trim(); if(!v) return alert('cole HTML ou URL'); this.stack.push({type:'html',source:v,raw:v}); this.renderStack(); },
+    async addFromURL(){ const v=document.getElementById('injectHtml').value.trim(); if(!v.startsWith('http')) return alert('informe URL'); try{ const r=await fetch(v); const txt=await r.text(); this.stack.push({type:'html',source:v,raw:txt}); this.renderStack(); }catch(e){ alert('fetch failed') } },
+    renderStack(){ const el=document.getElementById('stackList'); el.innerHTML=''; this.stack.forEach((s,i)=>{ const d=document.createElement('div'); d.style.padding='8px'; d.style.borderBottom='1px solid rgba(255,255,255,0.04)'; d.innerHTML = `<div style="font-weight:700">#${i+1} - ${s.source||'frag'}</div><div style="margin-top:6px"><button class="small-btn" onclick="Injector.preview(${i})">Preview</button> <button class="small-btn" onclick="Injector.remove(${i})">Remove</button></div>`; el.appendChild(d); }); },
+    preview(i){ const html=this.stack[i].raw; const blob=new Blob([html],{type:'text/html'}); const url=URL.createObjectURL(blob); window.open(url,'_blank') },
+    remove(i){ this.stack.splice(i,1); this.renderStack(); },
+    buildMergedFromStack(items){
+      const docs = items.map(it => new DOMParser().parseFromString(it.raw || '', 'text/html'));
+      const headParts = [], bodyParts = [];
+      docs.forEach(d=>{ if(d.head) Array.from(d.head.children).forEach(n=>headParts.push(n.outerHTML)); bodyParts.push(d.body? d.body.innerHTML : ''); });
+      return `<!doctype html><html><head>${headParts.join('\n')}</head><body>${bodyParts.join('\n')}</body></html>`;
+    },
+    exportStack(){ if(this.stack.length===0) return alert('stack empty'); const final=this.buildMergedFromStack(this.stack); const blob=new Blob([final],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='fusion_stack.html'; a.click(); },
+    async saveStackPrompt(){ const name = prompt('Nome do stack'); if(!name) return; await saveStackToDB(name); alert('Stack salvo'); Core.loadStacksFromDB(); this.renderStack(); },
+    async loadStackIntoWorkspaceById(id){
+      const s = Core.stacks.find(st=>st.id===id);
+      if(!s) return alert('Stack not found');
+      this.stack = s.items.map(it=>({type:it.type,source:it.source,raw:it.raw,id:it.id}));
+      this.renderStack(); this.closeUI(); alert('Stack carregado');
+    },
+    exportStackById(id){
+      const s = Core.stacks.find(st=>st.id===id); if(!s) return alert('not found');
+      const final = this.buildMergedFromStack(s.items);
+      const blob = new Blob([final],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(s.name||'stack')+'.html'; a.click();
+    },
+    deleteStackById(id){ if(!confirm('Delete stack?')) return; const tx=Core.db.transaction('stacks','readwrite'); tx.objectStore('stacks').delete(id); tx.oncomplete=()=>Core.loadStacksFromDB(); }
+  };
+
+  /* --------------------
+     Save stack to DB (composite thumb)
+     -------------------- */
+  async function saveStackToDB(stackName){
+    if(!Core.db) return alert('DB não pronto');
+    const thumbs = [];
+    for(const item of Injector.stack){
+      if(item && item.type==='module' && typeof item.id !== 'undefined'){
+        const m = Core.apps.find(a=>a.id===item.id);
+        if(m && m.thumb) thumbs.push(m.thumb);
+      } else if(item && item.type==='html' && item.raw){
+        thumbs.push(generateThumbnailFromContent(item.raw, item.source||'frag'));
+      }
+      if(thumbs.length>=4) break;
+    }
+    const name = stackName || ('STACK_' + Date.now().toString().slice(-4));
+    const thumb = compositeThumbFromThumbs(thumbs.length?thumbs:[generateThumbnailFromContent('',name)], name);
+    const tx = Core.db.transaction('stacks','readwrite');
+    const store = tx.objectStore('stacks');
+    const payload = { name, items: Injector.stack.map(s=>({type:s.type,source:s.source,raw:s.raw,id:s.id||null})), thumb, created:Date.now() };
+    return new Promise((res,rej)=>{ store.add(payload).onsuccess=()=>res(true); tx.onerror=e=>rej(e); });
+  }
+
+  Core.loadStacksFromDB = async function(){
+    if(!this.db) return;
+    return new Promise(res=>{
+      const tx = this.db.transaction('stacks','readonly');
+      tx.objectStore('stacks').getAll().onsuccess = e=>{
+        this.stacks = e.target.result || [];
+        const stackListEl = document.getElementById('stackList');
+        if(stackListEl){
+          stackListEl.innerHTML = '';
+          this.stacks.forEach((s)=>{
+            const div=document.createElement('div');
+            div.style.display='flex';div.style.justifyContent='space-between';div.style.alignItems='center';div.style.padding='8px';div.style.borderBottom='1px solid rgba(255,255,255,0.04)';
+            div.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><img src="${s.thumb}" width="42" height="42" style="border-radius:8px;object-fit:cover"/><div style="font-weight:700">${s.name}</div></div>
+              <div style="display:flex;gap:8px"><button class="small-btn" onclick="Injector.loadStackIntoWorkspaceById(${s.id})">Open</button><button class="small-btn" onclick="Injector.exportStackById(${s.id})">Export</button><button class="small-btn" onclick="Injector.deleteStackById(${s.id})">Del</button></div>`;
+            stackListEl.appendChild(div);
+          });
+        }
+        res(this.stacks);
+      };
+    });
+  };
+
+  /* --------------------
+     OS UI & gestures (ORB drag only)
+     -------------------- */
+  const OS = {
+    state:0,
+    handleHeaderClick(e){ if(e.target.closest('.small-btn') || e.target.closest('.app-card') || e.target.closest('#orb-canvas-container')) return; this.state=(this.state+1)%3; this.setState(this.state); },
+    setState(s){ this.state=s; const h=document.getElementById('eye-header'); h.classList.remove('sanfona','expanded','mini'); if(s===1) h.classList.add('sanfona'); if(s===2) h.classList.add('expanded'); },
+    toggleMini(e){ e.stopPropagation(); const h=document.getElementById('eye-header'); h.classList.toggle('mini'); if(h.classList.contains('mini')) Kernel.applySavedPos(); else { h.style.left=''; h.style.right=''; h.style.top=''; } },
+    renderApps(apps){
+      const grid=document.getElementById('app-grid');
+      document.getElementById('mod-count').innerText = apps.length;
+      grid.innerHTML = apps.map(app=>`<div class="app-card ${Core.activeId===app.id?'active':''}" onclick="Core.launch(${app.id})"><div class="app-thumb"><img src="${app.thumb}" style="width:100%;height:100%;object-fit:cover"/><div style="position:absolute;top:4px;right:6px;font-size:10px;color:red" onclick="Core.delete(${app.id}, event)">✕</div></div><div class="app-label">${app.name}</div></div>`).join('');
+    },
+    notify(msg){ const clock=document.getElementById('clock'); const o=clock.textContent; clock.textContent=msg; clock.style.color='var(--primary)'; setTimeout(()=>{clock.textContent=o;clock.style.color='';},1500); }
+  };
+
+  /* --------------------
+     Drag & Snap (ORB) - ONLY drag when mini
+     -------------------- */
+  (function(){
+    const header = document.getElementById('eye-header');
+    const orb = document.getElementById('orb-canvas-container');
+    if(!header||!orb) return;
+    let dragging=false,startX=0,startY=0,origLeft=0,origTop=0,pointerId=null;
+    const SNAP_PADDING=12; const STORE_KEY='eye_orb_pos_v2';
+    orb.style.touchAction='none'; orb.style.userSelect='none';
+    function isMini(){ return header.classList.contains('mini'); }
+    function applySavedPosition(){ const raw=localStorage.getItem(STORE_KEY); if(!raw) return; try{ const pos=JSON.parse(raw); if(pos.side==='left'){ header.style.left=(pos.left??SNAP_PADDING)+'px'; header.style.right='auto'; } else { header.style.left='auto'; header.style.right=(pos.right??SNAP_PADDING)+'px'; } header.style.top=(pos.top ?? (15 + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0)))+'px'; }catch(e){} }
+    const mo = new MutationObserver(ms=>{ for(const m of ms){ if(m.attributeName==='class'){ if(isMini()) applySavedPosition(); else { header.style.left=''; header.style.right=''; header.style.top=''; } } }});
+    mo.observe(header,{attributes:true});
+    function pointerDown(e){ if(!isMini()) return; e.preventDefault(); dragging=true; pointerId=e.pointerId; startX=e.clientX; startY=e.clientY; const rect=header.getBoundingClientRect(); origLeft=rect.left; origTop=rect.top; header.classList.add('dragging'); try{ orb.setPointerCapture(pointerId);}catch(err){} }
+    function pointerMove(e){ if(!dragging||e.pointerId!==pointerId) return; e.preventDefault(); const dx=e.clientX-startX, dy=e.clientY-startY; let newLeft=Math.round(origLeft+dx), newTop=Math.round(origTop+dy); const pad=6, elW=header.offsetWidth, elH=header.offsetHeight; newLeft=Math.max(pad, Math.min(window.innerWidth-elW-pad, newLeft)); newTop=Math.max(pad, Math.min(window.innerHeight-elH-pad, newTop)); header.style.left=newLeft+'px'; header.style.right='auto'; header.style.top=newTop+'px'; }
+    function pointerUp(e){ if(!dragging||e.pointerId!==pointerId) return; dragging=false; header.classList.remove('dragging'); try{ orb.releasePointerCapture(pointerId);}catch(err){} const rect=header.getBoundingClientRect(); const middle=window.innerWidth/2; const centerX=rect.left+rect.width/2; const side=(centerX < middle)?'left':'right'; if(side==='left'){ header.style.left=SNAP_PADDING+'px'; header.style.right='auto'; } else { header.style.left='auto'; header.style.right=SNAP_PADDING+'px'; } const saved={ side, top:Math.round(rect.top), left:Math.round(rect.left), right:Math.round(window.innerWidth-rect.right) }; localStorage.setItem(STORE_KEY, JSON.stringify(saved)); }
+    function dblReset(e){ e.stopPropagation(); header.style.left='auto'; header.style.right=SNAP_PADDING+'px'; header.style.top=(15 + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0))+'px'; localStorage.removeItem(STORE_KEY); }
+    orb.addEventListener('pointerdown', pointerDown);
+    document.addEventListener('pointermove', pointerMove);
+    document.addEventListener('pointerup', pointerUp);
+    orb.addEventListener('dblclick', dblReset);
+    document.addEventListener('pointercancel', pointerUp);
+    window.addEventListener('load', ()=>{ if(isMini()) applySavedPosition(); });
+    window.EYE_ORB = { resetPosition:dblReset, applySaved:applySavedPosition };
+  })();
+
+  /* --------------------
+     Kernel inspector & utilities (Real-time Upgrade)
+     -------------------- */
+  const Kernel = {
+    async readLocalStorage(){ const out={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); out[k]=localStorage.getItem(k);} return out; },
+    async readIndexedDB(dbName='EYE_OS_v50'){ const out=[]; try{ const req=indexedDB.open(dbName); return await new Promise((res)=>{ req.onsuccess=e=>{ const db=e.target.result; const names=[...db.objectStoreNames]; if(!names.length){ res({db:dbName,stores:{}}); return; } const stores={}; let pending=names.length; names.forEach(name=>{ const tx=db.transaction(name,'readonly'); tx.objectStore(name).getAll().onsuccess=ev=>{ stores[name]=ev.target.result; pending--; if(!pending) res({db:dbName,stores}); }; }); }; req.onerror=()=>res({db:dbName,error:true}); }); }catch(e){ return {error:true}; } },
+    async readCaches(){ if(!('caches' in window)) return {error:'no caches'}; const names = await caches.keys(); const out={}; for(const n of names){ const c = await caches.open(n); const keys = await c.keys(); out[n]= keys.map(r=>r.url); } return out; },
+    async dumpAll(){ const ls=await this.readLocalStorage(); const ids = await this.readIndexedDB('EYE_OS_v50'); const cache = await this.readCaches(); return { localStorage: ls, indexedDB: ids, caches: cache }; },
+    
+    // Live Scan Logic
+    async scan() {
+        const view = document.getElementById('kernel-view');
+        let html = '';
+        html += `<div class="data-row"><span class="data-key">Mounted Modules:</span> <span class="data-val">${Core.apps.length}</span></div>`;
+        html += `<div class="data-row"><span class="data-key">Local Storage:</span> <span class="data-val">${localStorage.length} keys</span></div>`;
+        if(performance && performance.memory) {
+            html += `<div class="data-row"><span class="data-key">Heap:</span> <span class="data-val">${(performance.memory.usedJSHeapSize / 1048576).toFixed(1)} MB</span></div>`;
+        }
+        view.innerHTML = html;
+    },
+    
+    async applySavedPos(){ if(window.EYE_ORB && window.EYE_ORB.applySaved) window.EYE_ORB.applySaved(); },
+    async downloadDump(){ const d = await this.dumpAll(); const blob = new Blob([JSON.stringify(d,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='eye_dump.json'; a.click(); }
+  };
+
+  /* --------------------
+     IO utils
+     -------------------- */
+  const IO = { downloadDB(){ const blob = new Blob([JSON.stringify(Core.apps,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='eye_os_backup.json'; a.click(); } };
+
+  /* --------------------
+     Boot
+     -------------------- */
+  window.addEventListener('load', async ()=>{
+    await Core.init();
+    Editor.init();
+    Core.loadStacksFromDB && Core.loadStacksFromDB();
+    setInterval(()=>{ const d=new Date(); document.getElementById('clock').innerText = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); },1000);
+  });
+
+  // service worker registration
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').then(()=>console.log('Service Worker Registered')).catch(()=>console.warn('SW reg fail'));
+  }
+
+  // expose APIs
+  window.Injector = Injector;
+  window.Core = Core;
+  window.Kernel = Kernel;
+  window.Editor = Editor;
+  </script>
+</body>
+</html>
+
+
