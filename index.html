@@ -38,30 +38,30 @@
     #eye-header{position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(2,4,8,0.85);backdrop-filter:var(--glass);border-bottom:1px solid var(--border);transition:all .6s cubic-bezier(.16,1,.3,1);height:calc(var(--header-h)+var(--safe-top));overflow:hidden}
     #eye-header.sanfona{height:45vh}
     #eye-header.expanded{height:100vh;background:var(--panel-bg)}
-    
+
     /* default mini: right (Mobile First) */
     #eye-header.mini{height:48px;width:48px;right:15px;left:auto;top:calc(15px + var(--safe-top));border-radius:50%;border:1px solid var(--primary);box-shadow:0 0 20px rgba(0,245,255,0.4);background:var(--bg)}
-    
+
     .status-bar{height:calc(var(--header-h)+var(--safe-top));padding:var(--safe-top) 20px 0;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
     .orb-wrapper{display:flex;align-items:center;gap:10px}
     .sys-identity{display:flex;align-items:center;gap:10px;font-size:.7rem;font-weight:900;letter-spacing:1.5px}
     .sys-identity span{color:var(--primary);text-shadow:0 0 8px var(--primary)}
     #orb-canvas-container{width:36px;height:36px;position:relative;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none}
-    
+
     .os-container{height:calc(100vh - var(--header-h));display:flex;flex-direction:column;padding:20px;gap:20px;opacity:0;transition:.3s;overflow-y:auto}
     #eye-header.expanded .os-container,#eye-header.sanfona .os-container{opacity:1}
-    
+
     .os-section{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:15px}
     .sec-title{font-size:.6rem;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:2px;display:flex;justify-content:space-between}
-    
+
     .app-dock{display:grid;grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:15px}
     .app-card{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
     .app-thumb{width:60px;height:60px;border-radius:18px;background:#000;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;position:relative;transition:0.2s}
     .app-card.active .app-thumb{border-color:var(--primary);box-shadow:0 0 15px rgba(0,245,255,.3)}
     .app-label{font-size:.6rem;color:var(--muted);font-weight:700;text-align:center}
-    
+
     .input-min{background:transparent;border:none;border-bottom:1px solid var(--border);color:#fff;padding:10px 0;font-size:0.9rem;width:100%}
-    
+
     /* EDITOR UPGRADE CSS */
     .editor-wrapper { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #000; }
     .editor-toolbar { display: flex; background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--border); }
@@ -70,26 +70,29 @@
         cursor: pointer; font-size: 0.9rem; transition: 0.2s;
     }
     .tool-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
-    
+
     #monaco-lite{width:100%;height:250px;background:transparent;border:none;color:var(--primary);font-family:var(--font-code);padding:15px;font-size:0.8rem;resize:none}
-    
+
     .btn-row{display:flex;gap:10px}
     .btn{flex:1;padding:14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:#fff;font-weight:800;font-size:.75rem;text-transform:uppercase;cursor:pointer;transition:.2s}
     .btn-main{background:var(--primary);color:#000;border:none}
-    
+
     /* KERNEL INSPECTOR CSS */
     .data-row { display: flex; justify-content: space-between; font-family: var(--font-code); font-size: 0.75rem; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .data-key { color: var(--muted); }
     .data-val { color: var(--accent); }
 
-    #stage{position:fixed;inset:0;background:var(--bg);z-index:1;padding-top:calc(var(--header-h)+var(--safe-top))}
-    iframe{width:100%;height:100%;border:none;background:#fff;opacity:0;transition:opacity 0.5s}
-    iframe.visible{opacity:1}
+    /* STAGE / IFRAME VISIBILITY (fix: allow transitions) */
+    #stage{position:fixed;inset:0;background:var(--bg);z-index:1;padding-top:calc(var(--header-h)+var(--safe-top));display:flex}
+    iframe{width:100%;height:100%;border:none;background:#fff;opacity:0;transition:opacity .3s, visibility .3s}
+    iframe.visible{opacity:1;visibility:visible;pointer-events:auto}
+    /* .hidden agora é "visually hidden" para permitir transições */
+    .hidden{opacity:0;visibility:hidden;pointer-events:none}
     #empty-state{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.2;text-align:center}
-    
+
     #eye-header.mini .os-container,#eye-header.mini .status-bar>:not(.orb-wrapper){display:none}
     #eye-header.mini .status-bar{padding:0;justify-content:center;height:100%}
-    
+
     /* UNO loader */
     :root{--g1:#F0F;--g2:#0FF}
     .di-loader{--di-size:36px;position:relative;width:var(--di-size);height:var(--di-size)}
@@ -98,15 +101,15 @@
     .di-dots{position:absolute;inset:0;transform:rotate(-90deg);animation:orbit 4.2s linear infinite}
     .di-dots i{--i:0;position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;background:conic-gradient(var(--g1),var(--g2));-webkit-mask:radial-gradient(circle,#000 62%,transparent 63%);mask:radial-gradient(circle,#000 62%,transparent 63%);opacity:.85;transform:rotate(calc(var(--i) * 51deg)) translate(calc(7px + var(--i) * 2.2px)) rotate(calc(var(--i) * -51deg));animation:pulse 4.2s linear infinite;animation-delay:calc(var(--i) * 0.6s)}
     @keyframes orbit{to{transform:rotate(270deg)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes breath{0%,100%{opacity:.9}50%{opacity:1}}@keyframes pulse{0%,70%{opacity:.55;transform:scale(.92)}76%,84%{opacity:1;transform:scale(1.12)}100%{opacity:.7;transform:scale(.96)}}
-    
+
     /* Drag */
     #eye-header.dragging{transition:none!important}
     #eye-header{transition:left .18s ease,right .18s ease,top .18s ease,height .45s ease}
-    
+
     /* injector modal */
     #injectorModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:10010}
     .small-btn{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);font-weight:700;color:var(--muted);cursor:pointer}
-    .hidden{display:none}
+    .hidden_elem{display:none}
   </style>
 </head>
 <body>
@@ -186,6 +189,7 @@
       <h1 style="font-size:3rem;margin:0">EYE</h1>
       <p>Fusion v5.0 Ready</p>
     </div>
+    <!-- iframe começa hidden (transição via classes) -->
     <iframe id="main-view" class="hidden"></iframe>
   </main>
 
@@ -286,7 +290,7 @@
         tx.objectStore('modules').getAll().onsuccess = e=>{
           this.apps = e.target.result || [];
           OS.renderApps(this.apps);
-          Kernel.scan(); // Update inspector
+          try{ Kernel.scan(); }catch(err){}
           res(this.apps);
         };
       });
@@ -303,6 +307,7 @@
     async patch(){
       if(!this.activeId) return alert('No active app');
       const app = this.apps.find(a=>a.id===this.activeId);
+      if(!app) return alert('App not found');
       app.content = document.getElementById('monaco-lite').value;
       app.name = document.getElementById('in-name').value || app.name;
       app.thumb = generateThumbnailFromContent(app.content, app.name);
@@ -319,10 +324,18 @@
       Editor.pushState(); // Save state for editor
       const view = document.getElementById('main-view'), empty=document.getElementById('empty-state');
       const blob = new Blob([app.content],{type:'text/html'});
-      view.src = URL.createObjectURL(blob); view.classList.add('visible'); view.classList.remove('hidden'); empty.classList.add('hidden');
+      // revoke old src if any
+      if(view._lastObjectURL){ try{ URL.revokeObjectURL(view._lastObjectURL); }catch(e){} view._lastObjectURL=null; }
+      const objUrl = URL.createObjectURL(blob);
+      view._lastObjectURL = objUrl;
+      view.src = objUrl;
+      view.classList.add('visible'); view.classList.remove('hidden');
+      empty.classList.add('hidden');
       OS.setState(0);
+      // revoke after load to avoid leaking memory
+      view.onload = ()=>{ try{ URL.revokeObjectURL(objUrl); view._lastObjectURL = null; }catch(e){} };
     },
-    delete(id,e){ e.stopPropagation(); if(!confirm('Delete Module?')) return; const tx=this.db.transaction('modules','readwrite'); tx.objectStore('modules').delete(id); tx.oncomplete = ()=> this.refresh(); },
+    delete(id,e){ if(e && e.stopPropagation) e.stopPropagation(); if(!confirm('Delete Module?')) return; const tx=this.db.transaction('modules','readwrite'); tx.objectStore('modules').delete(id); tx.oncomplete = ()=> this.refresh(); },
     nuke(){ if(confirm('Wipe System?')){ indexedDB.deleteDatabase('EYE_OS_v50'); location.reload(); } }
   };
 
@@ -407,15 +420,26 @@
   /* --------------------
      OS UI & gestures (ORB drag only)
      -------------------- */
+
+  // helper: atualiza padding-top do stage acordo com altura atual do header
+  function updateStagePadding(){
+    const header = document.getElementById('eye-header');
+    const stage = document.getElementById('stage');
+    if(!header || !stage) return;
+    // usa altura real do header (inclui safe-area)
+    const h = header.getBoundingClientRect().height || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 60);
+    stage.style.paddingTop = h + 'px';
+  }
+
   const OS = {
     state:0,
     handleHeaderClick(e){ if(e.target.closest('.small-btn') || e.target.closest('.app-card') || e.target.closest('#orb-canvas-container')) return; this.state=(this.state+1)%3; this.setState(this.state); },
-    setState(s){ this.state=s; const h=document.getElementById('eye-header'); h.classList.remove('sanfona','expanded','mini'); if(s===1) h.classList.add('sanfona'); if(s===2) h.classList.add('expanded'); },
-    toggleMini(e){ e.stopPropagation(); const h=document.getElementById('eye-header'); h.classList.toggle('mini'); if(h.classList.contains('mini')) Kernel.applySavedPos(); else { h.style.left=''; h.style.right=''; h.style.top=''; } },
+    setState(s){ this.state=s; const h=document.getElementById('eye-header'); h.classList.remove('sanfona','expanded','mini'); if(s===1) h.classList.add('sanfona'); if(s===2) h.classList.add('expanded'); updateStagePadding(); },
+    toggleMini(e){ e.stopPropagation(); const h=document.getElementById('eye-header'); h.classList.toggle('mini'); if(h.classList.contains('mini')) Kernel.applySavedPos(); else { h.style.left=''; h.style.right=''; h.style.top=''; } updateStagePadding(); },
     renderApps(apps){
       const grid=document.getElementById('app-grid');
-      document.getElementById('mod-count').innerText = apps.length;
-      grid.innerHTML = apps.map(app=>`<div class="app-card ${Core.activeId===app.id?'active':''}" onclick="Core.launch(${app.id})"><div class="app-thumb"><img src="${app.thumb}" style="width:100%;height:100%;object-fit:cover"/><div style="position:absolute;top:4px;right:6px;font-size:10px;color:red" onclick="Core.delete(${app.id}, event)">✕</div></div><div class="app-label">${app.name}</div></div>`).join('');
+      document.getElementById('mod-count').innerText = (apps && apps.length) ? apps.length : 0;
+      grid.innerHTML = (apps || []).map(app=>`<div class="app-card ${Core.activeId===app.id?'active':''}" onclick="Core.launch(${app.id})"><div class="app-thumb"><img src="${app.thumb}" style="width:100%;height:100%;object-fit:cover"/><div style="position:absolute;top:4px;right:6px;font-size:10px;color:red" onclick="Core.delete(${app.id}, event)">✕</div></div><div class="app-label">${app.name}</div></div>`).join('');
     },
     notify(msg){ const clock=document.getElementById('clock'); const o=clock.textContent; clock.textContent=msg; clock.style.color='var(--primary)'; setTimeout(()=>{clock.textContent=o;clock.style.color='';},1500); }
   };
@@ -431,19 +455,19 @@
     const SNAP_PADDING=12; const STORE_KEY='eye_orb_pos_v2';
     orb.style.touchAction='none'; orb.style.userSelect='none';
     function isMini(){ return header.classList.contains('mini'); }
-    function applySavedPosition(){ const raw=localStorage.getItem(STORE_KEY); if(!raw) return; try{ const pos=JSON.parse(raw); if(pos.side==='left'){ header.style.left=(pos.left??SNAP_PADDING)+'px'; header.style.right='auto'; } else { header.style.left='auto'; header.style.right=(pos.right??SNAP_PADDING)+'px'; } header.style.top=(pos.top ?? (15 + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0)))+'px'; }catch(e){} }
-    const mo = new MutationObserver(ms=>{ for(const m of ms){ if(m.attributeName==='class'){ if(isMini()) applySavedPosition(); else { header.style.left=''; header.style.right=''; header.style.top=''; } } }});
+    function applySavedPosition(){ const raw=localStorage.getItem(STORE_KEY); if(!raw) return; try{ const pos=JSON.parse(raw); if(pos.side==='left'){ header.style.left=(pos.left??SNAP_PADDING)+'px'; header.style.right='auto'; } else { header.style.left='auto'; header.style.right=(pos.right??SNAP_PADDING)+'px'; } header.style.top=(pos.top ?? (15 + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0)))+'px'; }catch(e){} updateStagePadding(); }
+    const mo = new MutationObserver(ms=>{ for(const m of ms){ if(m.attributeName==='class'){ if(isMini()) applySavedPosition(); else { header.style.left=''; header.style.right=''; header.style.top=''; } updateStagePadding(); } }});
     mo.observe(header,{attributes:true});
     function pointerDown(e){ if(!isMini()) return; e.preventDefault(); dragging=true; pointerId=e.pointerId; startX=e.clientX; startY=e.clientY; const rect=header.getBoundingClientRect(); origLeft=rect.left; origTop=rect.top; header.classList.add('dragging'); try{ orb.setPointerCapture(pointerId);}catch(err){} }
     function pointerMove(e){ if(!dragging||e.pointerId!==pointerId) return; e.preventDefault(); const dx=e.clientX-startX, dy=e.clientY-startY; let newLeft=Math.round(origLeft+dx), newTop=Math.round(origTop+dy); const pad=6, elW=header.offsetWidth, elH=header.offsetHeight; newLeft=Math.max(pad, Math.min(window.innerWidth-elW-pad, newLeft)); newTop=Math.max(pad, Math.min(window.innerHeight-elH-pad, newTop)); header.style.left=newLeft+'px'; header.style.right='auto'; header.style.top=newTop+'px'; }
-    function pointerUp(e){ if(!dragging||e.pointerId!==pointerId) return; dragging=false; header.classList.remove('dragging'); try{ orb.releasePointerCapture(pointerId);}catch(err){} const rect=header.getBoundingClientRect(); const middle=window.innerWidth/2; const centerX=rect.left+rect.width/2; const side=(centerX < middle)?'left':'right'; if(side==='left'){ header.style.left=SNAP_PADDING+'px'; header.style.right='auto'; } else { header.style.left='auto'; header.style.right=SNAP_PADDING+'px'; } const saved={ side, top:Math.round(rect.top), left:Math.round(rect.left), right:Math.round(window.innerWidth-rect.right) }; localStorage.setItem(STORE_KEY, JSON.stringify(saved)); }
-    function dblReset(e){ e.stopPropagation(); header.style.left='auto'; header.style.right=SNAP_PADDING+'px'; header.style.top=(15 + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0))+'px'; localStorage.removeItem(STORE_KEY); }
+    function pointerUp(e){ if(!dragging||e.pointerId!==pointerId) return; dragging=false; header.classList.remove('dragging'); try{ orb.releasePointerCapture(pointerId);}catch(err){} const rect=header.getBoundingClientRect(); const middle=window.innerWidth/2; const centerX=rect.left+rect.width/2; const side=(centerX < middle)?'left':'right'; if(side==='left'){ header.style.left=SNAP_PADDING+'px'; header.style.right='auto'; } else { header.style.left='auto'; header.style.right=SNAP_PADDING+'px'; } const saved={ side, top:Math.round(rect.top), left:Math.round(rect.left), right:Math.round(window.innerWidth-rect.right) }; localStorage.setItem(STORE_KEY, JSON.stringify(saved)); updateStagePadding(); }
+    function dblReset(e){ e.stopPropagation(); header.style.left='auto'; header.style.right=SNAP_PADDING+'px'; header.style.top=(15 + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0))+'px'; localStorage.removeItem(STORE_KEY); updateStagePadding(); }
     orb.addEventListener('pointerdown', pointerDown);
     document.addEventListener('pointermove', pointerMove);
     document.addEventListener('pointerup', pointerUp);
     orb.addEventListener('dblclick', dblReset);
     document.addEventListener('pointercancel', pointerUp);
-    window.addEventListener('load', ()=>{ if(isMini()) applySavedPosition(); });
+    window.addEventListener('load', ()=>{ if(isMini()) applySavedPosition(); updateStagePadding(); });
     window.EYE_ORB = { resetPosition:dblReset, applySaved:applySavedPosition };
   })();
 
@@ -460,7 +484,7 @@
     async scan() {
         const view = document.getElementById('kernel-view');
         let html = '';
-        html += `<div class="data-row"><span class="data-key">Mounted Modules:</span> <span class="data-val">${Core.apps.length}</span></div>`;
+        html += `<div class="data-row"><span class="data-key">Mounted Modules:</span> <span class="data-val">${(Core.apps && Core.apps.length) ? Core.apps.length : 0}</span></div>`;
         html += `<div class="data-row"><span class="data-key">Local Storage:</span> <span class="data-val">${localStorage.length} keys</span></div>`;
         if(performance && performance.memory) {
             html += `<div class="data-row"><span class="data-key">Heap:</span> <span class="data-val">${(performance.memory.usedJSHeapSize / 1048576).toFixed(1)} MB</span></div>`;
@@ -484,8 +508,12 @@
     await Core.init();
     Editor.init();
     Core.loadStacksFromDB && Core.loadStacksFromDB();
+    updateStagePadding();
     setInterval(()=>{ const d=new Date(); document.getElementById('clock').innerText = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); },1000);
   });
+
+  // ajustar padding no resize (manter conteúdo visível quando header muda)
+  window.addEventListener('resize', ()=>{ updateStagePadding(); });
 
   // service worker registration
   if('serviceWorker' in navigator){
@@ -500,5 +528,3 @@
   </script>
 </body>
 </html>
-
-
