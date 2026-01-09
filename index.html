@@ -638,6 +638,8 @@
       URL.revokeObjectURL(url);
     }
   };
+  
+  
 
   /* --------------------
      BOOT
@@ -655,12 +657,26 @@
     navigator.serviceWorker.register('sw.js').then(()=>console.log('SW Reg')).catch(()=>console.warn('SW Fail'));
   }
 
+
   window.Injector = Injector;
   window.Core = Core;
   window.Kernel = Kernel;
   window.Editor = Editor;
   window.Runtime = Runtime;
   window.StateManager = StateManager;
+  
+  const action = new URLSearchParams(location.search).get('action');
+
+if(action === 'new'){
+  OS.setState(2);
+}
+if(action === 'resume'){
+  restoreOSState();
+}
+if(action === 'editor'){
+  OS.setState(2);
+  document.getElementById('monaco-lite').focus();
+}
   </script>
 </body>
 </html>
