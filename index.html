@@ -3,9 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>InfoDose EYE · OS v5.0 Fusion</title>
+  <title>InfoDose EYE · OS v5.1 [CORTEX]</title>
 
-  <!-- PWA / Mobile Meta -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#020408">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -16,6 +15,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    /* --- CORE STYLES --- */
     :root {
       --bg: #020408;
       --header-h: 60px;
@@ -29,6 +29,10 @@
       --glass: blur(25px) saturate(180%);
       --panel-bg: rgba(5, 7, 12, 0.98);
       --safe-top: env(safe-area-inset-top, 0px);
+      
+      /* CORTEX SPECIFIC */
+      --sys-dim: #9aa0a6;
+      --sys-success: #00ff9d;
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;outline:none}
     *::-webkit-scrollbar{display:none}
@@ -38,8 +42,6 @@
     #eye-header{position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(2,4,8,0.85);backdrop-filter:var(--glass);border-bottom:1px solid var(--border);transition:all .6s cubic-bezier(.16,1,.3,1);height:calc(var(--header-h)+var(--safe-top));overflow:hidden}
     #eye-header.sanfona{height:45vh}
     #eye-header.expanded{height:100vh;background:var(--panel-bg)}
-
-    /* default mini: right (Mobile First) */
     #eye-header.mini{height:48px;width:48px;right:15px;left:auto;top:calc(15px + var(--safe-top));border-radius:50%;border:1px solid var(--primary);box-shadow:0 0 20px rgba(0,245,255,0.4);background:var(--bg)}
 
     .status-bar{height:calc(var(--header-h)+var(--safe-top));padding:var(--safe-top) 20px 0;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
@@ -62,36 +64,44 @@
 
     .input-min{background:transparent;border:none;border-bottom:1px solid var(--border);color:#fff;padding:10px 0;font-size:0.9rem;width:100%}
 
-    /* EDITOR UPGRADE CSS */
+    /* EDITOR & KERNEL */
     .editor-wrapper { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: #000; }
     .editor-toolbar { display: flex; background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--border); }
-    .tool-btn { 
-        flex: 1; background: transparent; border: none; color: var(--muted); padding: 10px; 
-        cursor: pointer; font-size: 0.9rem; transition: 0.2s;
-    }
+    .tool-btn { flex: 1; background: transparent; border: none; color: var(--muted); padding: 10px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
     .tool-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
-
     #monaco-lite{width:100%;height:250px;background:transparent;border:none;color:var(--primary);font-family:var(--font-code);padding:15px;font-size:0.8rem;resize:none}
-
     .btn-row{display:flex;gap:10px}
     .btn{flex:1;padding:14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.05);color:#fff;font-weight:800;font-size:.75rem;text-transform:uppercase;cursor:pointer;transition:.2s}
     .btn-main{background:var(--primary);color:#000;border:none}
-
-    /* KERNEL INSPECTOR CSS */
     .data-row { display: flex; justify-content: space-between; font-family: var(--font-code); font-size: 0.75rem; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .data-key { color: var(--muted); }
     .data-val { color: var(--accent); }
 
-    /* STAGE / IFRAME VISIBILITY (fix: allow transitions) */
+    /* STAGE */
     #stage{position:fixed;inset:0;background:var(--bg);z-index:1;padding-top:calc(var(--header-h)+var(--safe-top));display:flex}
     iframe{width:100%;height:100%;border:none;background:#fff;opacity:0;transition:opacity .3s, visibility .3s}
     iframe.visible{opacity:1;visibility:visible;pointer-events:auto}
-    /* .hidden agora é "visually hidden" para permitir transições */
     .hidden{opacity:0;visibility:hidden;pointer-events:none}
     #empty-state{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.2;text-align:center}
-
     #eye-header.mini .os-container,#eye-header.mini .status-bar>:not(.orb-wrapper){display:none}
     #eye-header.mini .status-bar{padding:0;justify-content:center;height:100%}
+
+    /* MODAL SYSTEM (Injector + Cortex) */
+    .sys-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:10010}
+    .modal-content{width:92%;max-width:900px;background:#061018;border-radius:12px;padding:16px;border:1px solid var(--border);max-height:85vh;overflow-y:auto}
+    .small-btn{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);font-weight:700;color:var(--muted);cursor:pointer}
+    .cortex-btn { border-color: var(--primary); color: var(--primary); background: rgba(0, 245, 255, 0.05); }
+
+    /* CORTEX SPECIFIC UI */
+    .ctx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .ctx-card { border: 1px solid var(--border); padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.02); }
+    .ctx-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display:block; }
+    .ctx-switch { width: 100%; padding: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-code); font-size: 0.8rem; }
+    .ctx-switch[data-active="true"] { border-color: var(--sys-success); color: var(--sys-success); background: rgba(0, 255, 157, 0.05); }
+    .ctx-switch[data-active="cloud"] { border-color: #bfa6ff; color: #bfa6ff; }
+    .ctx-switch[data-active="local"] { border-color: #00d2ff; color: #00d2ff; }
+    #ctx-flash{ position:fixed; top:0; left:0; width:100vw; height:100vh; background:#fff; pointer-events:none; opacity:0; z-index:20000; }
+    #snap-list-area { width: 100%; height: 150px; background: #000; border: 1px solid var(--border); color: var(--muted); font-family: var(--font-code); font-size: 0.75rem; padding: 8px; border-radius: 6px; margin-top: 8px; resize: none; }
 
     /* UNO loader */
     :root{--g1:#F0F;--g2:#0FF}
@@ -101,18 +111,11 @@
     .di-dots{position:absolute;inset:0;transform:rotate(-90deg);animation:orbit 4.2s linear infinite}
     .di-dots i{--i:0;position:absolute;left:50%;top:50%;width:4px;height:4px;border-radius:50%;background:conic-gradient(var(--g1),var(--g2));-webkit-mask:radial-gradient(circle,#000 62%,transparent 63%);mask:radial-gradient(circle,#000 62%,transparent 63%);opacity:.85;transform:rotate(calc(var(--i) * 51deg)) translate(calc(7px + var(--i) * 2.2px)) rotate(calc(var(--i) * -51deg));animation:pulse 4.2s linear infinite;animation-delay:calc(var(--i) * 0.6s)}
     @keyframes orbit{to{transform:rotate(270deg)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes breath{0%,100%{opacity:.9}50%{opacity:1}}@keyframes pulse{0%,70%{opacity:.55;transform:scale(.92)}76%,84%{opacity:1;transform:scale(1.12)}100%{opacity:.7;transform:scale(.96)}}
-
-    /* Drag */
-    #eye-header.dragging{transition:none!important}
-    #eye-header{transition:left .18s ease,right .18s ease,top .18s ease,height .45s ease}
-
-    /* injector modal */
-    #injectorModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);z-index:10010}
-    .small-btn{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);font-weight:700;color:var(--muted);cursor:pointer}
-    .hidden_elem{display:none}
   </style>
 </head>
 <body>
+
+  <div id="ctx-flash"></div>
 
   <header id="eye-header">
     <div class="status-bar" onclick="OS.handleHeaderClick(event)">
@@ -126,7 +129,7 @@
             </span>
           </span>
         </div>
-        <div class="sys-identity">EYE <span>OS v5.0</span></div>
+        <div class="sys-identity">EYE <span>OS v5.1</span></div>
       </div>
 
       <div class="sys-identity" style="gap:15px">
@@ -135,6 +138,7 @@
         <div style="display:flex;gap:8px;align-items:center">
           <button class="small-btn" onclick="OS.toggleMini(event)">ORB</button>
           <button class="small-btn" onclick="Injector.openUI()">STACKS</button>
+          <button class="small-btn cortex-btn" onclick="Runtime.openUI()">CORTEX</button>
         </div>
       </div>
     </div>
@@ -148,7 +152,6 @@
         <div class="app-dock" id="app-grid"></div>
       </div>
 
-      <!-- UPGRADED EDITOR SECTION -->
       <div class="os-section">
         <div class="sec-title">Fusion Code Editor</div>
         <input id="in-name" class="input-min" placeholder="Module Name...">
@@ -169,7 +172,6 @@
         </div>
       </div>
 
-      <!-- UPGRADED KERNEL SECTION -->
       <div class="os-section">
         <div class="sec-title">Kernel Inspector</div>
         <div id="kernel-view">
@@ -187,15 +189,13 @@
   <main id="stage">
     <div id="empty-state">
       <h1 style="font-size:3rem;margin:0">EYE</h1>
-      <p>Fusion v5.0 Ready</p>
+      <p>Córtex Online</p>
     </div>
-    <!-- iframe começa hidden (transição via classes) -->
     <iframe id="main-view" class="hidden"></iframe>
   </main>
 
-  <!-- Injector Modal (Preserved) -->
-  <div id="injectorModal">
-    <div style="width:92%;max-width:900px;background:#061018;border-radius:12px;padding:16px;border:1px solid var(--border);">
+  <div id="injectorModal" class="sys-modal">
+    <div class="modal-content">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div style="font-weight:800; color:#fff">FUSION STACKS</div>
         <div style="display:flex;gap:8px">
@@ -203,21 +203,64 @@
           <button class="small-btn" onclick="Injector.closeUI()">Close</button>
         </div>
       </div>
-
-      <div style="margin-top:12px;display:flex;gap:12px">
-        <textarea id="injectHtml" placeholder="Paste HTML or URL" style="flex:1;height:220px;background:#041018;border:1px solid var(--border);color:var(--muted);padding:10px;border-radius:8px;font-family:var(--font-code)"></textarea>
-        <div style="width:260px;display:flex;flex-direction:column;gap:8px">
+      <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
+        <textarea id="injectHtml" placeholder="Paste HTML or URL" style="flex:1;min-width:250px;height:220px;background:#041018;border:1px solid var(--border);color:var(--muted);padding:10px;border-radius:8px;font-family:var(--font-code)"></textarea>
+        <div style="width:100%;max-width:260px;display:flex;flex-direction:column;gap:8px">
           <button class="small-btn" onclick="Injector.addFromTextarea()">Add to Stack</button>
           <button class="small-btn" onclick="Injector.addFromURL()">Fetch+Add (URL)</button>
-          <div style="flex:1;overflow:auto;border:1px solid var(--border);padding:8px;border-radius:8px" id="stackList"></div>
+          <div style="flex:1;min-height:100px;overflow:auto;border:1px solid var(--border);padding:8px;border-radius:8px" id="stackList"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cortexModal" class="sys-modal">
+    <div class="modal-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+        <div style="font-weight:800; color:var(--primary); display:flex; gap:10px; align-items:center">
+             <i class="fa fa-microchip"></i> CÓRTEX // RUNTIME
+        </div>
+        <button class="small-btn" onclick="Runtime.closeUI()">Close</button>
+      </div>
+
+      <div class="ctx-grid">
+         <div class="ctx-card">
+            <span class="ctx-label">Brain (Intelligence Source)</span>
+            <button id="btn-brain" class="ctx-switch" data-active="cloud" onclick="Runtime.toggleBrain()">
+                <span><i class="fa fa-cloud"></i> SOURCE</span>
+                <span id="txt-brain">CLOUD</span>
+            </button>
+            <input id="local-ip" class="input-min" style="margin-top:8px;font-size:0.75rem" placeholder="IP Local (ex: 192.168.0.15:11434)">
+         </div>
+         <div class="ctx-card">
+            <span class="ctx-label">Soul (Persistence Level)</span>
+            <button id="btn-soul" class="ctx-switch" data-active="true" onclick="Runtime.toggleSoul()">
+                <span><i class="fa fa-save"></i> MODE</span>
+                <span id="txt-soul">SAVED</span>
+            </button>
+            <div style="margin-top:8px;font-size:0.65rem;color:var(--muted)">Saved: Mantém estado.<br>Temp: Sandbox volátil.</div>
+         </div>
+      </div>
+
+      <div class="ctx-card" style="margin-top:10px">
+          <span class="ctx-label">State Snapshots (Time Machine)</span>
+          <div style="display:flex; gap:8px; margin-bottom:8px">
+              <input id="snap-name" class="input-min" style="margin:0; border:1px solid var(--border); border-radius:4px; padding:6px" placeholder="Nome do snapshot (ex: studio, carro)">
+              <button class="small-btn" style="background:var(--primary);color:#000;border:none" onclick="Runtime.saveSnap()">SALVAR</button>
+          </div>
+          <div style="display:flex; gap:8px;">
+             <button class="small-btn" onclick="Runtime.listSnaps()">Listar</button>
+             <button class="small-btn" onclick="Runtime.loadSnap()">Restaurar</button>
+             <button class="small-btn" onclick="Runtime.exportSnap()">Export JSON</button>
+          </div>
+          <textarea id="snap-list-area" readonly placeholder="Log de snapshots..."></textarea>
       </div>
     </div>
   </div>
 
   <script>
   /* --------------------
-     Helpers: hash, sanitize, thumbnail (User's Advanced Generator)
+     HELPERS
      -------------------- */
   function hashCode(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h += (h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); } return Math.abs(h); }
   function escapeHTML(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -248,7 +291,7 @@
   }
 
   /* --------------------
-     EDITOR OBJECT (New Logic)
+     EDITOR OBJECT
      -------------------- */
   const Editor = {
     el: null, history: [], ptr: -1,
@@ -257,7 +300,6 @@
         this.pushState();
         let tm;
         this.el.addEventListener('input', ()=>{ clearTimeout(tm); tm=setTimeout(()=>this.pushState(), 600); });
-        // Tab support
         this.el.addEventListener('keydown', e => { if(e.key === 'Tab') { e.preventDefault(); this.el.setRangeText('  ', this.el.selectionStart, this.el.selectionEnd, 'end'); }});
     },
     pushState(){ const val = this.el.value; if(this.history[this.ptr]===val) return; this.ptr++; this.history=this.history.slice(0,this.ptr); this.history.push(val); },
@@ -268,7 +310,7 @@
   };
 
   /* --------------------
-     Core: IndexedDB (modules + stacks)
+     CORE (DB & LOGIC)
      -------------------- */
   const Core = { db:null, apps:[], stacks:[], activeId:null,
     async init(){
@@ -321,10 +363,9 @@
       document.getElementById('active-app-name').textContent = app.name.toUpperCase();
       document.getElementById('in-name').value = app.name;
       document.getElementById('monaco-lite').value = app.content;
-      Editor.pushState(); // Save state for editor
+      Editor.pushState(); 
       const view = document.getElementById('main-view'), empty=document.getElementById('empty-state');
       const blob = new Blob([app.content],{type:'text/html'});
-      // revoke old src if any
       if(view._lastObjectURL){ try{ URL.revokeObjectURL(view._lastObjectURL); }catch(e){} view._lastObjectURL=null; }
       const objUrl = URL.createObjectURL(blob);
       view._lastObjectURL = objUrl;
@@ -332,7 +373,6 @@
       view.classList.add('visible'); view.classList.remove('hidden');
       empty.classList.add('hidden');
       OS.setState(0);
-      // revoke after load to avoid leaking memory
       view.onload = ()=>{ try{ URL.revokeObjectURL(objUrl); view._lastObjectURL = null; }catch(e){} };
     },
     delete(id,e){ if(e && e.stopPropagation) e.stopPropagation(); if(!confirm('Delete Module?')) return; const tx=this.db.transaction('modules','readwrite'); tx.objectStore('modules').delete(id); tx.oncomplete = ()=> this.refresh(); },
@@ -340,7 +380,7 @@
   };
 
   /* --------------------
-     Injector (stack in memory)
+     INJECTOR
      -------------------- */
   const Injector = { stack: [],
     openUI(){ document.getElementById('injectorModal').style.display='flex'; Core.loadStacksFromDB(); this.renderStack(); },
@@ -372,19 +412,13 @@
     deleteStackById(id){ if(!confirm('Delete stack?')) return; const tx=Core.db.transaction('stacks','readwrite'); tx.objectStore('stacks').delete(id); tx.oncomplete=()=>Core.loadStacksFromDB(); }
   };
 
-  /* --------------------
-     Save stack to DB (composite thumb)
-     -------------------- */
   async function saveStackToDB(stackName){
     if(!Core.db) return alert('DB não pronto');
     const thumbs = [];
     for(const item of Injector.stack){
       if(item && item.type==='module' && typeof item.id !== 'undefined'){
-        const m = Core.apps.find(a=>a.id===item.id);
-        if(m && m.thumb) thumbs.push(m.thumb);
-      } else if(item && item.type==='html' && item.raw){
-        thumbs.push(generateThumbnailFromContent(item.raw, item.source||'frag'));
-      }
+        const m = Core.apps.find(a=>a.id===item.id); if(m && m.thumb) thumbs.push(m.thumb);
+      } else if(item && item.type==='html' && item.raw){ thumbs.push(generateThumbnailFromContent(item.raw, item.source||'frag')); }
       if(thumbs.length>=4) break;
     }
     const name = stackName || ('STACK_' + Date.now().toString().slice(-4));
@@ -418,15 +452,12 @@
   };
 
   /* --------------------
-     OS UI & gestures (ORB drag only)
+     OS UI & GESTURES
      -------------------- */
-
-  // helper: atualiza padding-top do stage acordo com altura atual do header
   function updateStagePadding(){
     const header = document.getElementById('eye-header');
     const stage = document.getElementById('stage');
     if(!header || !stage) return;
-    // usa altura real do header (inclui safe-area)
     const h = header.getBoundingClientRect().height || (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 60);
     stage.style.paddingTop = h + 'px';
   }
@@ -444,9 +475,6 @@
     notify(msg){ const clock=document.getElementById('clock'); const o=clock.textContent; clock.textContent=msg; clock.style.color='var(--primary)'; setTimeout(()=>{clock.textContent=o;clock.style.color='';},1500); }
   };
 
-  /* --------------------
-     Drag & Snap (ORB) - ONLY drag when mini
-     -------------------- */
   (function(){
     const header = document.getElementById('eye-header');
     const orb = document.getElementById('orb-canvas-container');
@@ -471,16 +499,11 @@
     window.EYE_ORB = { resetPosition:dblReset, applySaved:applySavedPosition };
   })();
 
-  /* --------------------
-     Kernel inspector & utilities (Real-time Upgrade)
-     -------------------- */
   const Kernel = {
     async readLocalStorage(){ const out={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); out[k]=localStorage.getItem(k);} return out; },
     async readIndexedDB(dbName='EYE_OS_v50'){ const out=[]; try{ const req=indexedDB.open(dbName); return await new Promise((res)=>{ req.onsuccess=e=>{ const db=e.target.result; const names=[...db.objectStoreNames]; if(!names.length){ res({db:dbName,stores:{}}); return; } const stores={}; let pending=names.length; names.forEach(name=>{ const tx=db.transaction(name,'readonly'); tx.objectStore(name).getAll().onsuccess=ev=>{ stores[name]=ev.target.result; pending--; if(!pending) res({db:dbName,stores}); }; }); }; req.onerror=()=>res({db:dbName,error:true}); }); }catch(e){ return {error:true}; } },
     async readCaches(){ if(!('caches' in window)) return {error:'no caches'}; const names = await caches.keys(); const out={}; for(const n of names){ const c = await caches.open(n); const keys = await c.keys(); out[n]= keys.map(r=>r.url); } return out; },
     async dumpAll(){ const ls=await this.readLocalStorage(); const ids = await this.readIndexedDB('EYE_OS_v50'); const cache = await this.readCaches(); return { localStorage: ls, indexedDB: ids, caches: cache }; },
-    
-    // Live Scan Logic
     async scan() {
         const view = document.getElementById('kernel-view');
         let html = '';
@@ -491,40 +514,153 @@
         }
         view.innerHTML = html;
     },
-    
     async applySavedPos(){ if(window.EYE_ORB && window.EYE_ORB.applySaved) window.EYE_ORB.applySaved(); },
     async downloadDump(){ const d = await this.dumpAll(); const blob = new Blob([JSON.stringify(d,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='eye_dump.json'; a.click(); }
   };
-
-  /* --------------------
-     IO utils
-     -------------------- */
   const IO = { downloadDB(){ const blob = new Blob([JSON.stringify(Core.apps,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='eye_os_backup.json'; a.click(); } };
 
+  /* =========================================
+     CORTEX & STATE MANAGER INTEGRATION
+     ========================================= */
+  const Runtime = {
+    soul: true, brain: 'cloud',
+    init(){
+      const cfg = localStorage.getItem('@dual/runtime/config');
+      if (cfg) { try { const p = JSON.parse(cfg); this.soul=p.soul; this.brain=p.brain; } catch(e){} }
+      this.updateUI();
+      // Restore Local IP
+      const ip = localStorage.getItem('@dual/config/local_ip');
+      if(ip) document.getElementById('local-ip').value = ip;
+      // Auto Boot check
+      StateManager.checkBootParams();
+    },
+    openUI(){ document.getElementById('cortexModal').style.display='flex'; },
+    closeUI(){ document.getElementById('cortexModal').style.display='none'; },
+    
+    toggleBrain(){
+      this.brain = (this.brain === 'cloud') ? 'local' : 'cloud';
+      this.saveConfig(); this.updateUI(); this.flash();
+    },
+    toggleSoul(){
+      this.soul = !this.soul;
+      this.saveConfig(); this.updateUI(); this.flash();
+    },
+    saveConfig(){
+      localStorage.setItem('@dual/runtime/config', JSON.stringify({soul:this.soul, brain:this.brain}));
+      // Save local IP on config save too
+      const ip = document.getElementById('local-ip').value.trim();
+      if(ip) localStorage.setItem('@dual/config/local_ip', ip);
+    },
+    updateUI(){
+      const bBrain = document.getElementById('btn-brain');
+      const bSoul = document.getElementById('btn-soul');
+      bBrain.setAttribute('data-active', this.brain);
+      document.getElementById('txt-brain').innerText = this.brain.toUpperCase();
+      bSoul.setAttribute('data-active', this.soul.toString());
+      document.getElementById('txt-soul').innerText = this.soul ? 'SAVED' : 'TEMP';
+    },
+    saveSnap(){
+      const name = document.getElementById('snap-name').value || `snap_${Date.now()}`;
+      StateManager.capture(name);
+    },
+    listSnaps(){
+      const l = StateManager.list();
+      document.getElementById('snap-list-area').value = l.map(s=>`${s.meta.name} [${s.meta.type}] - ${new Date(s.meta.timestamp).toLocaleTimeString()}`).join('\n');
+    },
+    loadSnap(){
+      const name = document.getElementById('snap-name').value;
+      if(!name) return alert('Nome do snapshot necessário');
+      StateManager.restore(name);
+    },
+    exportSnap(){
+      const name = document.getElementById('snap-name').value;
+      if(name) StateManager.exportSnapshot(name);
+    },
+    flash(){
+      const f = document.getElementById('ctx-flash');
+      f.style.opacity='0.3'; setTimeout(()=>f.style.opacity='0',150);
+    }
+  };
+
+  const StateManager = {
+    PREFIX: '@dual/v1/',
+    capture(name){
+      const metaType = Runtime.soul ? 'persistent' : 'volatile';
+      const snap = {
+        meta: { id:`snap_${Date.now()}`, name, timestamp: Date.now(), type: metaType },
+        runtime: { brain: Runtime.brain, soul: Runtime.soul },
+        context: { activeAppId: Core.activeId, activeAppName: document.getElementById('in-name').value },
+        data: { editorContent: document.getElementById('monaco-lite').value }
+      };
+      this.save(snap);
+    },
+    save(snap){
+      const key = `${this.PREFIX}snapshot:${snap.meta.name}`;
+      const pl = JSON.stringify(snap);
+      if(snap.meta.type==='persistent') localStorage.setItem(key, pl);
+      else sessionStorage.setItem(key, pl);
+      OS.notify('SNAPSHOT SAVED');
+    },
+    list(){
+      const out=[];
+      for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.startsWith(this.PREFIX)) try{out.push(JSON.parse(localStorage.getItem(k)))}catch(e){} }
+      return out.sort((a,b)=>b.meta.timestamp - a.meta.timestamp);
+    },
+    restore(name){
+      const key = `${this.PREFIX}snapshot:${name}`;
+      let raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if(!raw) return alert('Snapshot not found');
+      try { this.apply(JSON.parse(raw)); } catch(e){ console.error(e); }
+    },
+    apply(snap){
+      console.log('[STATE] Restoring', snap);
+      Runtime.brain = snap.runtime.brain; Runtime.soul = snap.runtime.soul; Runtime.updateUI();
+      if(snap.data.editorContent) document.getElementById('monaco-lite').value = snap.data.editorContent;
+      if(snap.context.activeAppId){
+         // Launch app if available, else just set editor
+         Core.launch(snap.context.activeAppId);
+      }
+      OS.notify('RESTORED: '+snap.meta.name);
+      Runtime.closeUI();
+    },
+    checkBootParams(){
+      const p = new URLSearchParams(location.search);
+      const s = p.get('snapshot');
+      if(s) setTimeout(()=>this.restore(s), 500); // delay for db init
+    },
+    exportSnapshot(name) {
+      const key = `${this.PREFIX}snapshot:${name}`;
+      let raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (!raw) return alert('Not found');
+      const blob = new Blob([raw], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `${name}.json`; a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
   /* --------------------
-     Boot
+     BOOT
      -------------------- */
   window.addEventListener('load', async ()=>{
     await Core.init();
     Editor.init();
     Core.loadStacksFromDB && Core.loadStacksFromDB();
+    Runtime.init(); // Init Cortex
     updateStagePadding();
     setInterval(()=>{ const d=new Date(); document.getElementById('clock').innerText = d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); },1000);
   });
-
-  // ajustar padding no resize (manter conteúdo visível quando header muda)
   window.addEventListener('resize', ()=>{ updateStagePadding(); });
-
-  // service worker registration
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').then(()=>console.log('Service Worker Registered')).catch(()=>console.warn('SW reg fail'));
+    navigator.serviceWorker.register('sw.js').then(()=>console.log('SW Reg')).catch(()=>console.warn('SW Fail'));
   }
 
-  // expose APIs
   window.Injector = Injector;
   window.Core = Core;
   window.Kernel = Kernel;
   window.Editor = Editor;
+  window.Runtime = Runtime;
+  window.StateManager = StateManager;
   </script>
 </body>
 </html>
